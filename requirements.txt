@@ -1,7 +1,7 @@
 pandas
 pymongo
 notebook
-pymongo[srv]
+pymongo[srv]==3.11
 boto3
 mypy-boto3-s3
 fastapi
