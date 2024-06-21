@@ -70,8 +70,12 @@ class DataIngestion:
             logging.info(f"Created {os.path.basename(self.data_ingestion_config.TEST_DATA_ARTEFACT_FILE_DIR)} directory")
 
             # Saving the train and test data as csv files
-            train_set.to_csv(self.data_ingestion_config.TRAIN_DATA_FILE_PATH, index=False, header=True)
-            test_set.to_csv(self.data_ingestion_config.TEST_DATA_FILE_PATH, index=False, header=True)
+            train_data_file_path = self.data_ingestion_config.TRAIN_DATA_FILE_PATH
+            train_set.to_csv(train_data_file_path, index=False, header=True)
+
+            test_data_file_path = self.data_ingestion_config.TEST_DATA_FILE_PATH
+
+            test_set.to_csv(test_data_file_path, index=False, header=True)
             logging.info("Saved the train and test data as csv files")
             logging.info(f"Saved {os.path.basename(self.data_ingestion_config.TRAIN_DATA_FILE_PATH)}, \
                           {os.path.basename(self.data_ingestion_config.TEST_DATA_FILE_PATH)} in \
@@ -104,7 +108,14 @@ class DataIngestion:
             train_set, test_set = self.split_data_as_train_test(df)
             logging.info("Initiated the data ingestion")
             logging.info("Exited the initiate_data_ingestion method of DataIngestion class")
-            return DataIngestionArtefacts(train_set, test_set)
+
+            # Saving data validation artfefacts
+            data_ingestion_artefacts = DataIngestionArtefacts(
+                train_data_file_path=self.data_ingestion_config.TRAIN_DATA_FILE_PATH,
+                test_data_file_path=self.data_ingestion_config.TEST_DATA_FILE_PATH,
+            )
+
+            return data_ingestion_artefacts 
         except Exception as e:
             raise ShipmentException(e, sys)
         

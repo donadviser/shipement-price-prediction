@@ -16,7 +16,7 @@ seaborn
 from-root
 xgboost
 dill
-evidently
+evidently==0.4.28
 catboost
 category-encoders==2.5.1.post0
 -e .
