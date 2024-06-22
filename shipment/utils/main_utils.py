@@ -41,8 +41,9 @@ class MainUtils:
         logging.info("Entered the save_numpy_array_data method of MainUtils class.")
         try:
             with open(file_path, "wb") as file_obj:
-                np.save(file_path, array)
+                np.save(file_obj, array)
             logging.info(f"Successfully saved the numpy array data to {file_path}")
+            return file_path
         except Exception as e:
             raise ShipmentException(e, sys)
         
@@ -50,11 +51,12 @@ class MainUtils:
         logging.info("Entered the load_numpy_array_data method of MainUtils class.")
         try:
             with open(file_path, "rb") as file_obj:
-                array = np.load(file_path)
+                array = np.load(file_obj, allow_pickle=True)
             logging.info(f"Successfully loaded the numpy array data from {file_path}")
             return array
         except Exception as e:
             raise ShipmentException(e, sys)
+            
         
     def get_tuned_model(
             self,
@@ -104,7 +106,7 @@ class MainUtils:
             raise ShipmentException(e, sys)
         
     
-    def get_model_params(self, model: object, X_train: pd.DataFrame, y_train: pd.DataFrame) -> pd.DataFrame:
+    def get_model_params(self, model: object, X_train: pd.DataFrame, y_train: pd.DataFrame) -> Dict:
         logging.info("Entered the get_model_params method of MainUtils class")
         try:
             VERBOSE = 3
@@ -116,9 +118,9 @@ class MainUtils:
             model_param_grid = model_config["train_model"][model_name]
             model_grid = GridSearchCV(
                 model,
-                param_grid=model_param_grid,
-                cv=CV,
+                model_param_grid,
                 verbose=VERBOSE,
+                cv=CV,                
                 n_jobs=N_JOBD,
             )
             model_grid.fit(X_train, y_train)
@@ -136,6 +138,7 @@ class MainUtils:
                 dill.dump(obj, file_obj)
             logging.info(f"Successfully saved the object to {file_path}")
             logging.info("Exited the save_object method of MainUtils class")
+            return file_path
         except Exception as e:
             raise ShipmentException(e, sys)
         
@@ -152,11 +155,11 @@ class MainUtils:
             raise ShipmentException(e, sys)
         
     @staticmethod
-    def get_best_model_with_name_and_score(model_list: list) -> Tuple[object,float]:
+    def get_best_model_with_name_and_score(model_list: list) -> Tuple[object, float]:
         logging.info("Entered the get_best_model_with_name_and_score method of MainUtils class")
         try:
-            best_score = max(model_list, key=lambda x: x[0])
-            best_model = max(model_list, key=lambda x: x[1])
+            best_score = max(model_list)[0]
+            best_model = max(model_list)[1]
             logging.info("Exited the get_best_model_with_name_and_score method of MainUtils class")
             return best_model, best_score
         except Exception as e:

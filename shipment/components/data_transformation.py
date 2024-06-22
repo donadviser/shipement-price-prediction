@@ -13,7 +13,6 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from shipment.entity.config_entity import DataTransformationConfig
 from shipment.entity.artefacts_entity import (
     DataIngestionArtefacts,
-    DataValidationArtefacts,
     DataTransformationArtefacts,
     )
 
@@ -28,12 +27,8 @@ class DataTransformation:
         self.data_transformation_config = data_transformation_config
 
         # Reading the Train and Test data from Data Ingestion Artefacts folder
-        self.train_set = pd.read_csv(
-            self.data_ingestion_artefacts.train_data_file_path
-        )
-        self.test_set = pd.read_csv(
-            self.data_ingestion_artefacts.test_data_file_path
-        )
+        self.train_set = pd.read_csv(self.data_ingestion_artefacts.train_data_file_path)
+        self.test_set = pd.read_csv(self.data_ingestion_artefacts.test_data_file_path)
         logging.info("Initiated data transformation for the dataset")
 
     
@@ -63,12 +58,10 @@ class DataTransformation:
             # Using transformer objects in column transformer
             preprocessor = ColumnTransformer(
                 transformers=[
-                    ('StandardScaler', numerical_transformer, numerical_columns),
                     ('OneHotEncoder', oh_transformer, onehot_columns),
                     ('BinaryEncoder', binary_transformer, binary_columns),
+                    ('StandardScaler', numerical_transformer, numerical_columns),                   
                 ],
-                remainder='passthrough',
-                verbose_feature_names_out=False,
             )
             logging.info("Created preprocessor object from ColumnTransformer.")
             logging.info("Exited the get_data_transformer_object method of DataTransformation class.")
@@ -136,14 +129,14 @@ class DataTransformation:
             target_column_name = self.data_transformation_config.SCHEMA_CONFIG['target_column']
             numerical_columns = self.data_transformation_config.SCHEMA_CONFIG['numerical_columns']
 
-            #Outlier Capping
-            continuous_columns = [
-                feature
-                for feature in numerical_columns
-                if len(self.train_set[feature].unique())>= 25
-            ]
-            [self._outlier_capping(col, self.train_set) for col in continuous_columns]
-            [self._outlier_capping(col, self.test_set) for col in continuous_columns]
+            # #Outlier Capping
+            # continuous_columns = [
+            #     feature
+            #     for feature in numerical_columns
+            #     if len(self.train_set[feature].unique())>= 25
+            # ]
+            # [self._outlier_capping(col, self.train_set) for col in continuous_columns]
+            # [self._outlier_capping(col, self.test_set) for col in continuous_columns]
 
             # Gettting the input features and target feature for Training dataset
             input_feature_train_df = self.train_set.drop(columns=[target_column_name], axis=1)
@@ -207,6 +200,7 @@ class DataTransformation:
                 transformed_train_file_path=transformed_train_file,
                 transformed_test_file_path=transformed_test_file,
             )
+
             return data_transformation_artefacts
         except Exception as e:
             raise ShipmentException(e, sys)
