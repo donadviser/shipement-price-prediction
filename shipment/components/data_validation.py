@@ -312,9 +312,3 @@ class DataValidation:
     
         except Exception as e:
             raise ShipmentException(e, sys)
-
-
-
-
-    
-

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from from_root import from_root
 import os
-#from shipment.configuration.s3_operations import S3Operations
+from shipment.configuration.s3_operations import S3Operations
 from shipment.utils.main_utils import MainUtils
 from shipment.constant import *
 from shipment.exception import ShipmentException
@@ -81,6 +81,7 @@ class DataTransformationConfig:
             from_root(), ARTEFACTS_DIR, DATA_TRANSFORMATION_ARTEFACTS_DIR, PREPROCESSOR_OBJECT_FILE_NAME
             )
 
+# Model Evaluation Configurations
 @dataclass
 class ModelTrainerConfig:
     def __init__(self):
@@ -99,3 +100,25 @@ class ModelTrainerConfig:
         self.TRAINED_MODEL_FILE_PATH: str = os.path.join(
             from_root(), ARTEFACTS_DIR, MODEL_TRAINER_ARTEFACTS_DIR, MODEL_FILE_NAME
             )
+        
+
+@dataclass
+class ModelEvaluationConfig:
+    def __init__(self):
+        self.S3_OPERATIONS =S3Operations()
+        self.UTILS = MainUtils()
+        self.BUCKET_NAME: str = BUCKET_NAME
+        self.BEST_MODEL_PATH: str = os.path.join(
+            from_root(), ARTEFACTS_DIR, MODEL_TRAINER_ARTEFACTS_DIR, MODEL_FILE_NAME
+        )
+
+
+# Model Pusher Configureations
+@dataclass
+class ModelPusherConfig:
+    def __init__(self):
+        self.BEST_MODEL_PATH: str = os.path.join(
+            from_root(), ARTEFACTS_DIR, MODEL_TRAINER_ARTEFACTS_DIR, MODEL_FILE_NAME
+        )
+        self.BUCKET_NAME: str = BUCKET_NAME
+        self.S3_MODEL_KEY_PATH: str = os.path.join(S3_MODEL_NAME)

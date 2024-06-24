@@ -8,6 +8,8 @@ from shipment.entity.artefacts_entity import (
     DataValidationArtefacts,
     DataTransformationArtefacts,
     ModelTrainerArtefacts,
+    ModelEvaluationArtefacts,
+    ModelPusherArtefacts,
     )
     
 from shipment.entity.config_entity import (
@@ -15,12 +17,17 @@ from shipment.entity.config_entity import (
     DataValidationConfig,
     DataTransformationConfig,
     ModelTrainerConfig,
+    ModelEvaluationConfig,
+    ModelPusherConfig,
     )
     
 from shipment.components.data_ingestion import DataIngestion
 from shipment.components.data_validation import DataValidation
 from shipment.components.data_transformation import DataTransformation
 from shipment.components.model_trainer import ModelTrainer
+from shipment.components.model_evaluation import ModelEvaluation
+from shipment.configuration.s3_operations import S3Operations
+from shipment.components.model_pusher import ModelPusher
 
 
 class TrainPipeline:
@@ -29,6 +36,9 @@ class TrainPipeline:
         self.data_validation_config = DataValidationConfig()
         self.data_transformation_config = DataTransformationConfig()
         self.model_trainer_config = ModelTrainerConfig()
+        self.model_evaluation_config = ModelEvaluationConfig()
+        self.s3_operations = S3Operations()
+        self.model_pusher_config = ModelPusherConfig()
         self.mongo_op = MongoDBOperation()
 
     # This method is used to start the data ingestion.
@@ -95,10 +105,57 @@ class TrainPipeline:
             return model_trainer_artefact
         except Exception as e:
             raise ShipmentException(e, sys)
-
-
-
         
+
+
+
+    # This method is used to start the model evaluation.
+    def start_model_evaluation(
+            self,
+            data_ingestion_artefact: DataIngestionArtefacts,
+            model_trainer_artefact: ModelTrainerArtefacts,
+        ) -> ModelEvaluationArtefacts:
+        logging.info("Entered the start_model_evaluation method of TrainPipeline class.")
+        try:
+            model_evaluation = ModelEvaluation(
+                model_trainer_artefact=model_trainer_artefact,
+                model_evaluation_config=self.model_evaluation_config,
+                data_ingestion_artefact=data_ingestion_artefact,
+            )
+            
+            model_evaluation_artefact = model_evaluation.initiate_model_evaluation()
+            logging.info("Performed the model evaluation operation.")
+            logging.info("Exited the start_model_evaluation method of TrainPipeline class.")
+            return model_evaluation_artefact
+        except Exception as e:
+            raise ShipmentException(e, sys)
+        
+
+    # This method is used to start the model pusher.
+    def start_model_pusher(
+            self,
+            model_trainer_artefacts: ModelTrainerArtefacts,
+            s3: S3Operations,
+            data_transformation_artefacts: DataTransformationArtefacts
+        ) -> ModelPusherArtefacts:
+        logging.info("Entered the start_model_pusher method of TrainPipeline class.")
+        try:
+            model_pusher = ModelPusher(
+                model_pusher_config=self.model_pusher_config,
+                model_trainer_artefacts=model_trainer_artefacts,
+                s3=s3,
+                data_transformation_artefacts=data_transformation_artefacts,
+            )
+            
+            model_pusher_artefact = model_pusher.initiate_model_pusher()
+            logging.info("Performed the model push operation.")
+            logging.info("Exited the start_model_pusher method of TrainPipeline class.")
+            return model_pusher_artefact
+        except Exception as e:
+            raise ShipmentException(e, sys)
+  
+
+
     # This method is used to start the training pipeline.
     def run_pipeline(self) -> None:
         logging.info("Entered the run_pipeline method of TrainPipeline class.")
@@ -115,6 +172,20 @@ class TrainPipeline:
 
             model_trainer_artefact = self.start_model_trainer(
                 data_transformation_artefact=data_transformation_artefact
+            )
+
+            model_evaluation_artefact = self.start_model_evaluation(
+                data_ingestion_artefact=data_ingestion_artefact,
+                model_trainer_artefact=model_trainer_artefact,
+            )
+            if not model_evaluation_artefact.is_model_accepted:
+                logging.info("The model is not accpeted.")
+                return None
+            
+            model_pusher_artefact = self.start_model_pusher(
+                model_trainer_artefacts=model_trainer_artefact,
+                s3=self.s3_operations,
+                data_transformation_artefacts=data_transformation_artefact,
             )
 
             logging.info("Exited the run_pipeline method of TrainPipeline class.")
