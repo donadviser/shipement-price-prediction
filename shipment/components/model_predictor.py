@@ -117,9 +117,9 @@ class CostPredictor:
             logging.info("Loaded best model from s3 bucket")
 
             # Predicting the data with the best model
-            result = best_model.predict(X)
+            results = best_model.predict(X)
             logging.info("Exited the predict method of ModelPredictor class")
-            return result
+            return results
         
         except Exception as e:
             raise ShipmentException(e, sys)

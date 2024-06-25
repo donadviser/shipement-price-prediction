@@ -10,6 +10,7 @@
     <img src="{{ url_for('static', path='Image/your_profile_pic.jpg') }}" alt="Your Profile Picture" class="profile">
     <div class="form-box">
       <form action="{{ url_for('predictRouteClient') }}" method="post">
+
         <div class="form-group">
           <label for="artist">Artist Reputation:</label>
           <input type="float" id="artist" name="artist" placeholder=" [ 0 - 1.0 ] ">
@@ -32,12 +33,12 @@
       
         <div class="form-group">
             <label for="priceOfSculpture">Price of Sculpture:</label>
-            <input type="float" id="priceOfSculpture" name="priceOfSculpture" placeholder="Enter Price of Sculpture (float)">
+            <input type="float" id="priceOfSculpture" name="priceOfSculpture" placeholder="Enter Price of Sculpture">
         </div>
       
         <div class="form-group">
             <label for="baseShippingPrice">Base Shipping Price:</label>
-            <input type="float" id="baseShippingPrice" name="baseShippingPrice" placeholder="Enter Base Shipping Price (float)">
+            <input type="float" id="baseShippingPrice" name="baseShippingPrice" placeholder="Enter Base Shipping Price">
         </div>         
       
     <div class="form-group">
@@ -116,7 +117,7 @@
     </div>
     <div>      
     <h2>
-      Predicted Shipment Price is : {{ results }}
+      Predicted Shipment Price is : {{ context }}
     </h2>
   </body>
 </html>

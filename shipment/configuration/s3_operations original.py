@@ -6,22 +6,21 @@ from botocore.exceptions import ClientError
 from mypy_boto3_s3.service_resource import Bucket
 import pandas as pd
 from typing import Union, List
-from io import StringIO, BytesIO
+from io import StringIO
 import sys
 import pickle
 import os
 
 
 class S3Operations:
-    BUCKET_NAME = 'hexa-shipment-model-io-files'
-    
     def __init__(self):
         self.s3_resource = boto3.resource("s3")
         self.s3_client = boto3.client("s3")
-        
 
     @staticmethod
-    def read_object(object_name: str, decode: bool = True, make_readable: bool = True) -> Union[StringIO, BytesIO]:
+    def read_object(
+        object_name: str, decode: bool = True, make_readable: bool = True
+    ) -> Union[StringIO, str]:
         """
         Read the object from the S3 bucket.
 
@@ -31,22 +30,18 @@ class S3Operations:
             make_readable (bool, optional): Whether to make the object readable. Defaults to True.
 
         Returns:
-            Union[StringIO, BytesIO]: The object.
+            Union[StringIO, str]: The object.
         """
         logging.info("Entered the read_object method of S3Operations class.")
         try:
-            s3_client = boto3.client("s3")
-            response = s3_client.get_object(Bucket=S3Operations.BUCKET_NAME, Key=object_name)
-            content = response['Body'].read()
+            s3_object = boto3.resource("s3").Object(object_name)
+            content = s3_object.get()["Body"].read()
 
             if decode:
-                content = content.decode()  # Decode bytes to str if needed
+                content = content.decode()  # Decode bytes to str
 
             if make_readable:
-                if isinstance(content, str):
-                    content = StringIO(content)  # Convert str to StringIO
-                elif isinstance(content, bytes):
-                    content = BytesIO(content)   # Convert bytes to BytesIO
+                content = StringIO(content)  # Convert str to StringIO
 
             logging.info("Exited the read_object method of S3Operations class.")
             return content
@@ -132,21 +127,12 @@ class S3Operations:
         logging.info("Entered the load_model method of S3Operations class.")
         
         try:
-            # Form the full path to the model file in S3
             model_file = model_name if model_dir is None else f"{model_dir}/{model_name}"
-            
-            # Get the file object from S3
-            file_obj = self.get_file_object(model_file, bucket_name)
-            
-            # Read the model object content from S3
-            model_obj = self.read_object(file_obj.key, decode=False)
-            
-            # Load the model from the object content
-            model = pickle.loads(model_obj.read())
-            
+            f_obj = self.get_file_object(model_file, bucket_name)
+            model_obj = self.read_object(f_obj, decode=False)
+            model = pickle.loads(model_obj)
             logging.info("Exited the load_model method of S3Operations class.")
             return model
-        
         except Exception as e:
             raise ShipmentException(e, sys)
         
