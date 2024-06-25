@@ -42,3 +42,7 @@ MODEL_SAVE_FORMAT = ".pkl"
 #S3 BUCKET
 BUCKET_NAME = "hexa-shipment-model-io-files"
 S3_MODEL_NAME = "shipping_price_model.pkl"
+
+
+APP_HOST = "127.0.0.1"
+APP_PORT = 8080

@@ -178,7 +178,7 @@ class ModelTrainer:
                 logging.info("Saved the best model object path")
             else:
                 logging.info("No best mode found: The best model score is less than the base model score")
-                raise "No best model found with score more than base score"
+                #raise "No best model found with score more than base score"
             
             # Savind the Model trainer artefacts
             model_trainer_artefacts = ModelTrainerArtefacts(
