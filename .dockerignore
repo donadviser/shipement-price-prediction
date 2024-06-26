@@ -1,0 +1,10 @@
+artefacts
+save_models
+.python-version
+docs
+venv
+flowcharts
+notebooks
+.git
+log
+data
